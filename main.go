@@ -162,6 +162,7 @@ const (
 )
 
 type Game struct {
+	playerID           string
 	playID             string
 	mode               gameMode
 	touchContext       *touchutil.TouchContext
@@ -191,8 +192,9 @@ func (g *Game) Update() error {
 			g.humanHeight = 0
 
 			logging.LogAsync(gameName, map[string]interface{}{
-				"play_id": g.playID,
-				"action":  "start_game",
+				"player_id": g.playerID,
+				"play_id":   g.playID,
+				"action":    "start_game",
 			})
 
 			audio.NewPlayerFromBytes(audioContext, gameStartAudioData).Play()
@@ -203,10 +205,11 @@ func (g *Game) Update() error {
 	case gameModePlaying:
 		if g.ticksFromModeStart%600 == 0 {
 			logging.LogAsync(gameName, map[string]interface{}{
-				"play_id": g.playID,
-				"action":  "playing",
-				"ticks":   g.ticksFromModeStart,
-				"score":   g.score,
+				"player_id": g.playerID,
+				"play_id":   g.playID,
+				"action":    "playing",
+				"ticks":     g.ticksFromModeStart,
+				"score":     g.score,
 			})
 		}
 
@@ -428,10 +431,11 @@ func (g *Game) Update() error {
 			s := &g.sharks[i]
 			if math.Pow(s.x-screenCenterX, 2)+math.Pow(s.y-(surfaceBaseHeight-g.humanHeight), 2) < math.Pow(s.r+humanR, 2) {
 				logging.LogAsync(gameName, map[string]interface{}{
-					"play_id": g.playID,
-					"action":  "game_over",
-					"ticks":   g.ticksFromModeStart,
-					"score":   g.score,
+					"player_id": g.playerID,
+					"play_id":   g.playID,
+					"action":    "game_over",
+					"ticks":     g.ticksFromModeStart,
+					"score":     g.score,
 				})
 
 				g.mode = gameModeGameOver
@@ -584,8 +588,9 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 
 func (g *Game) initialize() {
 	logging.LogAsync(gameName, map[string]interface{}{
-		"play_id": g.playID,
-		"action":  "initialize",
+		"player_id": g.playerID,
+		"play_id":   g.playID,
+		"action":    "initialize",
 	})
 
 	g.mode = gameModeTitle
@@ -618,6 +623,12 @@ func main() {
 	} else {
 		rand.Seed(time.Now().Unix())
 	}
+	playerID := os.Getenv("GAME_PLAYER_ID")
+	if playerID == "" {
+		if playerIDObj, err := uuid.NewRandom(); err == nil {
+			playerID = playerIDObj.String()
+		}
+	}
 
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("Wave Interference")
@@ -631,6 +642,7 @@ func main() {
 	}
 
 	game := &Game{
+		playerID:     playerID,
 		playID:       playID,
 		touchContext: touchutil.CreateTouchContext(),
 	}
