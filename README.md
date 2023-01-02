@@ -2,7 +2,7 @@
 
 ![Wave Interference](https://github.com/tsujio/game-wave-interference/blob/main/image.png?raw=true)
 
-[Play](https://www.tsujio.org/games/game.html?title=wave-interference)
+[Play](https://game.tsujio.org/game.html?title=wave-interference)
 
 # Credits
 
